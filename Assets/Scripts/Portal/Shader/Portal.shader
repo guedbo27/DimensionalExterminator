@@ -6,16 +6,17 @@
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Opaque" "RenderPipeline" = "UniversalRenderPipeline"}
         LOD 100
         Cull Off
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct appdata
             {
@@ -36,19 +37,19 @@
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.vertex = TransformObjectToHClip(v.vertex.xyz);
                 o.screenPos = ComputeScreenPos(o.vertex);
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            half4 frag (v2f i) : SV_Target
             {
                 float2 uv = i.screenPos.xy / i.screenPos.w;
-                fixed4 portalCol = tex2D(_MainTex, uv);
+                half4 portalCol = tex2D(_MainTex, uv);
                 return portalCol * displayMask + _InactiveColour * (1-displayMask);
             }
-            ENDCG
+            ENDHLSL
         }
     }
-    Fallback "Standard" // for shadows
+    Fallback "Universal Render Pipeline/Lit" // for shadows
 }
